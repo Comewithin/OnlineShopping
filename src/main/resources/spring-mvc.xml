@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+    
+    <!--  这个配置文件中我们主要启用Sping注解驱动,进行静态资源的配置,注解扫描配置和视图解析器配置      -->
+    
+    
+    <!-- 注解扫描包，在xml配置了这个标签后，spring可以自动去扫描base-pack下面或者子包下面的java文件，
+               如果扫描到有@Component @Controller @Service等这些注解的类，则把这些类注册为bean -->
+    <context:component-scan base-package="com.OnlineShopping" />
+
+    <!-- 告知Spring，启用注解驱动，使用默认的注解映射的支持 ， 
+    a：自动注册RequestMappingHandlerMapping与RequestMappingHandlerAdapter两个bean，是spring MVC为@Controllers分发请求所必须的，即解决了@Controller注解使用的前提配置。
+    b：默认提供一系列的功能:数据绑定，数字和日期的format@NumberFormat,@DateTimeFormat 
+    c:xml,json的默认读写支持-->
+    <mvc:annotation-driven />
+
+    <!--使用默认的Servlet来响应静态文件-->
+    <!-- <mvc:default-servlet-handler/> -->
+    
+    <!-- 配置静态资源，直接映射到对应的文件夹，不被DispatcherServlet处理，3.04新增功能，需要重新设置spring-mvc-3.0.xsd -->
+    <mvc:resources mapping="/images/**" location="/images/" />
+    <mvc:resources mapping="/js/**" location="/js/" />
+    <mvc:resources mapping="/css/**" location="/css/" />
+    <mvc:resources mapping="/doc/**" location="/doc/" />
+    <mvc:resources mapping="/html/**" location="/html/" />
+
+    <!-- 定义跳转的文件的前后缀 ，视图模式配置 -->
+    <bean id="viewResolver"
+        class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 这里的配置我的理解是自动给后面action的方法return的字符串加上前缀和后缀，变成一个 可用的url地址 -->
+        <property name="prefix" value="/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--避免IE执行AJAX时，返回JSON出现下载文件 -->
+    <bean id="mappingJacksonHttpMessageConverter"
+        class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/html;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 定义ResponseBody返回类型 -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json; charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+            <bean
+                class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/x-www-form-urlencoded; charset=UTF-8</value>
+                        <value>application/json; charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->
+    <!-- <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"> 
+        默认编码 <property name="defaultEncoding" value="utf-8" /> 文件大小最大值 <property 
+        name="maxUploadSize" value="10485760000" /> 内存中的最大值 <property name="maxInMemorySize" 
+        value="40960" /> </bean> -->
+
+</beans>
